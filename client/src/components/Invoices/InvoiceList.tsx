@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Plus, Search, Download, Eye } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Plus, Search, Download, Eye, Edit, Trash2 } from 'lucide-react';
 import { Invoice } from '../../types';
+import { InvoiceForm } from './InvoiceForm';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -12,8 +13,33 @@ interface InvoiceListProps {
 
 export function InvoiceList({ onCreateInvoice, onViewInvoice }: InvoiceListProps) {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [showForm, setShowForm] = useState(false);
+  const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
+
+  const deleteInvoiceMutation = useMutation({
+    mutationFn: async (invoiceId: string) => {
+      // Delete invoice items first
+      await supabase
+        .from('invoice_items')
+        .delete()
+        .eq('invoice_id', invoiceId);
+
+      // Delete invoice
+      const { error } = await supabase
+        .from('invoices')
+        .delete()
+        .eq('id', invoiceId)
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+    },
+  });
 
   const { data: invoices = [], isLoading: loading } = useQuery({
     queryKey: ['invoices', user?.id],
@@ -65,6 +91,27 @@ export function InvoiceList({ onCreateInvoice, onViewInvoice }: InvoiceListProps
       default:
         return status;
     }
+  };
+
+  const handleCreateInvoice = () => {
+    setEditingInvoice(null);
+    setShowForm(true);
+  };
+
+  const handleEditInvoice = (invoice: Invoice) => {
+    setEditingInvoice(invoice);
+    setShowForm(true);
+  };
+
+  const handleDeleteInvoice = (invoice: Invoice) => {
+    if (confirm(`Yakin ingin menghapus invoice ${invoice.invoice_number}?`)) {
+      deleteInvoiceMutation.mutate(invoice.id);
+    }
+  };
+
+  const handleCloseForm = () => {
+    setShowForm(false);
+    setEditingInvoice(null);
   };
 
   if (loading) {

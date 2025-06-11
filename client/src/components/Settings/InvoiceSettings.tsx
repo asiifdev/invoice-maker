@@ -37,6 +37,13 @@ export function InvoiceSettings() {
     enabled: !!user?.id,
   });
 
+  // Update pattern state when settings load
+  React.useEffect(() => {
+    if (settings?.invoice_pattern) {
+      setPattern(settings.invoice_pattern);
+    }
+  }, [settings]);
+
   const saveSettingsMutation = useMutation({
     mutationFn: async (settingsData: Partial<InvoiceSettings>) => {
       if (settings?.id) {
@@ -129,7 +136,6 @@ export function InvoiceSettings() {
                     name="pattern"
                     value={pattern}
                     onChange={(e) => setPattern(e.target.value)}
-                    defaultValue={settings?.invoice_pattern || 'INV{DD}{MM}{YY}{###}'}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="INV{DD}{MM}{YY}{###}"
                   />
