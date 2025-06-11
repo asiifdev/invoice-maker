@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { StatsCard } from './StatsCard';
 import { DollarSign, FileText, Users, AlertCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
@@ -7,45 +8,42 @@ import { useAuth } from '../../hooks/useAuth';
 
 export function Dashboard() {
   const { user } = useAuth();
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [clients, setClients] = useState<Client[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (user) {
-      fetchData();
-    }
-  }, [user]);
+  const { data: invoices = [], isLoading: invoicesLoading } = useQuery({
+    queryKey: ['invoices', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('invoices')
+        .select(`
+          *,
+          clients (name)
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data as Invoice[];
+    },
+    enabled: !!user?.id,
+  });
 
-  const fetchData = async () => {
-    try {
-      const [invoicesResult, clientsResult] = await Promise.all([
-        supabase
-          .from('invoices')
-          .select(`
-            *,
-            clients (name)
-          `)
-          .eq('user_id', user?.id)
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('clients')
-          .select('*')
-          .eq('user_id', user?.id)
-      ]);
+  const { data: clients = [], isLoading: clientsLoading } = useQuery({
+    queryKey: ['clients', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      return data as Client[];
+    },
+    enabled: !!user?.id,
+  });
 
-      if (invoicesResult.data) {
-        setInvoices(invoicesResult.data as any);
-      }
-      if (clientsResult.data) {
-        setClients(clientsResult.data);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const loading = invoicesLoading || clientsLoading;
 
   const totalRevenue = invoices
     .filter(inv => inv.status === 'paid')

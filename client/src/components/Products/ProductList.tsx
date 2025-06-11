@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Plus, Search, Package } from 'lucide-react';
 import { Product } from '../../types';
 import { supabase } from '../../lib/supabase';
@@ -10,32 +11,23 @@ interface ProductListProps {
 
 export function ProductList({ onCreateProduct }: ProductListProps) {
   const { user } = useAuth();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    if (user) {
-      fetchProducts();
-    }
-  }, [user]);
-
-  const fetchProducts = async () => {
-    try {
+  const { data: products = [], isLoading: loading } = useQuery({
+    queryKey: ['products', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setProducts(data || []);
-    } catch (error) {
-      console.error('Error fetching products:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return data as Product[];
+    },
+    enabled: !!user?.id,
+  });
 
   const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

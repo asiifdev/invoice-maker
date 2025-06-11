@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Plus, Search, Download, Eye } from 'lucide-react';
 import { Invoice } from '../../types';
 import { supabase } from '../../lib/supabase';
@@ -11,36 +12,27 @@ interface InvoiceListProps {
 
 export function InvoiceList({ onCreateInvoice, onViewInvoice }: InvoiceListProps) {
   const { user } = useAuth();
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  useEffect(() => {
-    if (user) {
-      fetchInvoices();
-    }
-  }, [user]);
-
-  const fetchInvoices = async () => {
-    try {
+  const { data: invoices = [], isLoading: loading } = useQuery({
+    queryKey: ['invoices', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
       const { data, error } = await supabase
         .from('invoices')
         .select(`
           *,
           clients (name)
         `)
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setInvoices(data as any);
-    } catch (error) {
-      console.error('Error fetching invoices:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return data as Invoice[];
+    },
+    enabled: !!user?.id,
+  });
 
   const filteredInvoices = invoices.filter(invoice => {
     const matchesSearch = invoice.invoice_number.toLowerCase().includes(searchTerm.toLowerCase()) ||

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Plus, Search, Mail, Phone, MapPin } from 'lucide-react';
 import { Client } from '../../types';
 import { supabase } from '../../lib/supabase';
@@ -10,32 +11,23 @@ interface ClientListProps {
 
 export function ClientList({ onCreateClient }: ClientListProps) {
   const { user } = useAuth();
-  const [clients, setClients] = useState<Client[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    if (user) {
-      fetchClients();
-    }
-  }, [user]);
-
-  const fetchClients = async () => {
-    try {
+  const { data: clients = [], isLoading: loading } = useQuery({
+    queryKey: ['clients', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
       const { data, error } = await supabase
         .from('clients')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setClients(data || []);
-    } catch (error) {
-      console.error('Error fetching clients:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return data as Client[];
+    },
+    enabled: !!user?.id,
+  });
 
   const filteredClients = clients.filter(client =>
     client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
