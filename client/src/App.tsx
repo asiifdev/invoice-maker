@@ -6,6 +6,7 @@ import { InvoicePreview } from './components/Invoices/InvoicePreview';
 import { ClientList } from './components/Clients/ClientList';
 import { ProductList } from './components/Products/ProductList';
 import { CompanyProfile } from './components/Company/CompanyProfile';
+import { InvoiceSettings } from './components/Settings/InvoiceSettings';
 import { AuthForm } from './components/Auth/AuthForm';
 import { NavigationTab, Invoice } from './types';
 import { useAuth } from './hooks/useAuth';
@@ -61,6 +62,8 @@ function App() {
         );
       case 'company':
         return <CompanyProfile />;
+      case 'settings':
+        return <InvoiceSettings />;
       default:
         return <Dashboard />;
     }

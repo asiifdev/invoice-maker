@@ -6,7 +6,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
 
 interface ProductFormProps {
-  product?: Product;
+  product?: Product | null;
   onClose: () => void;
 }
 

@@ -76,7 +76,7 @@ export interface Invoice {
   items?: InvoiceItem[];
 }
 
-export type NavigationTab = 'dashboard' | 'invoices' | 'clients' | 'products' | 'company';
+export type NavigationTab = 'dashboard' | 'invoices' | 'clients' | 'products' | 'company' | 'settings';
 
 export interface User {
   id: string;

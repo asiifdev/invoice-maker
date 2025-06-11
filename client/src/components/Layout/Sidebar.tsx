@@ -5,6 +5,7 @@ import {
   Users, 
   Package, 
   Building,
+  Settings,
   TrendingUp,
   LogOut
 } from 'lucide-react';
@@ -22,6 +23,7 @@ const navigationItems = [
   { id: 'clients' as const, label: 'Klien', icon: Users },
   { id: 'products' as const, label: 'Produk', icon: Package },
   { id: 'company' as const, label: 'Perusahaan', icon: Building },
+  { id: 'settings' as const, label: 'Pengaturan', icon: Settings },
 ];
 
 export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
