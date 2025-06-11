@@ -1,4 +1,5 @@
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { 
   LayoutDashboard, 
   FileText, 
@@ -11,6 +12,7 @@ import {
 } from 'lucide-react';
 import { NavigationTab } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
+import { supabase } from '../../lib/supabase';
 
 interface SidebarProps {
   activeTab: NavigationTab;
@@ -27,7 +29,26 @@ const navigationItems = [
 ];
 
 export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
+
+  const { data: company } = useQuery({
+    queryKey: ['company', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from('companies')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        throw error;
+      }
+
+      return data;
+    },
+    enabled: !!user?.id,
+  });
 
   const handleSignOut = async () => {
     await signOut();

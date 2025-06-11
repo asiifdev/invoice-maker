@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Building, Mail, Phone, MapPin, Globe, FileText, Edit, Save, X } from 'lucide-react';
+import { Building, Mail, Phone, MapPin, Globe, FileText, Edit, Save, X, Upload, Image } from 'lucide-react';
 import { Company } from '../../types';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
@@ -9,6 +9,9 @@ export function CompanyProfile() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: company, isLoading: loading } = useQuery({
     queryKey: ['company', user?.id],
@@ -42,14 +45,59 @@ export function CompanyProfile() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['company', user?.id] });
+      setIsEditing(false);
+      setLogoFile(null);
+      setLogoPreview(null);
+    },
+  });
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setLogoFile(file);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setLogoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
+  const uploadLogoMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user?.id}-${Date.now()}.${fileExt}`;
+      
+      const { data, error } = await supabase.storage
+        .from('company-logos')
+        .upload(fileName, file);
+
+      if (error) throw error;
+      
+      const { data: { publicUrl } } = supabase.storage
+        .from('company-logos')
+        .getPublicUrl(fileName);
+
+      return publicUrl;
     },
   });
 
   const updateCompanyMutation = useMutation({
     mutationFn: async (companyData: Partial<Company>) => {
+      let logoUrl = companyData.logo_url;
+
+      // Upload logo if a new file is selected
+      if (logoFile) {
+        logoUrl = await uploadLogoMutation.mutateAsync(logoFile);
+      }
+
       const { data, error } = await supabase
         .from('companies')
-        .update(companyData)
+        .update({ ...companyData, logo_url: logoUrl })
         .eq('id', company?.id)
         .eq('user_id', user?.id)
         .select()
@@ -171,6 +219,52 @@ export function CompanyProfile() {
 
           {isEditing ? (
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Logo Upload Section */}
+              <div className="space-y-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Logo Perusahaan
+                </label>
+                <div className="flex items-start space-x-4">
+                  <div className="w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300 overflow-hidden">
+                    {logoPreview ? (
+                      <img 
+                        src={logoPreview} 
+                        alt="Preview Logo" 
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                    ) : company.logo_url ? (
+                      <img 
+                        src={company.logo_url} 
+                        alt="Company Logo" 
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                    ) : (
+                      <Building className="h-8 w-8 text-gray-400" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <button
+                      type="button"
+                      onClick={triggerFileInput}
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    >
+                      <Upload className="h-4 w-4" />
+                      Upload Logo
+                    </button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                    <p className="mt-2 text-sm text-gray-500">
+                      Ukuran maksimal 2MB. Format: JPG, PNG, SVG
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
