@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Plus, Search, Mail, Phone, MapPin } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Plus, Search, Mail, Phone, MapPin, Edit, Trash2 } from 'lucide-react';
 import { Client } from '../../types';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
+import { ClientForm } from './ClientForm';
 
 interface ClientListProps {
   onCreateClient: () => void;
@@ -11,7 +12,10 @@ interface ClientListProps {
 
 export function ClientList({ onCreateClient }: ClientListProps) {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
 
   const { data: clients = [], isLoading: loading } = useQuery({
     queryKey: ['clients', user?.id],
@@ -28,6 +32,42 @@ export function ClientList({ onCreateClient }: ClientListProps) {
     },
     enabled: !!user?.id,
   });
+
+  const deleteClientMutation = useMutation({
+    mutationFn: async (clientId: string) => {
+      const { error } = await supabase
+        .from('clients')
+        .delete()
+        .eq('id', clientId)
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['clients', user?.id] });
+    },
+  });
+
+  const handleCreateClient = () => {
+    setEditingClient(null);
+    setShowForm(true);
+  };
+
+  const handleEditClient = (client: Client) => {
+    setEditingClient(client);
+    setShowForm(true);
+  };
+
+  const handleDeleteClient = (client: Client) => {
+    if (confirm(`Apakah Anda yakin ingin menghapus klien "${client.name}"?`)) {
+      deleteClientMutation.mutate(client.id);
+    }
+  };
+
+  const handleCloseForm = () => {
+    setShowForm(false);
+    setEditingClient(null);
+  };
 
   const filteredClients = clients.filter(client =>
     client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -50,7 +90,7 @@ export function ClientList({ onCreateClient }: ClientListProps) {
           <p className="mt-2 text-gray-600">Kelola hubungan klien dan informasi kontak Anda.</p>
         </div>
         <button
-          onClick={onCreateClient}
+          onClick={handleCreateClient}
           className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
         >
           <Plus className="w-4 h-4 mr-2" />
