@@ -1,12 +1,9 @@
-import { 
-  users, 
+import {
   companies,
   clients,
   products,
   invoices,
   invoice_items,
-  type User, 
-  type InsertUser,
   type Company,
   type InsertCompany,
   type Client,
@@ -23,10 +20,6 @@ import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
-  getUser(id: number): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
-
   // Company methods
   getCompanies(userId: string): Promise<Company[]>;
   getCompany(id: string, userId: string): Promise<Company | undefined>;
@@ -59,22 +52,6 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  // User methods
-  async getUser(id: number): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.id, id));
-    return result[0];
-  }
-
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.username, username));
-    return result[0];
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const result = await db.insert(users).values(insertUser).returning();
-    return result[0];
-  }
-
   // Company methods
   async getCompanies(userId: string): Promise<Company[]> {
     return await db.select().from(companies).where(eq(companies.user_id, userId));

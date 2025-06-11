@@ -1,5 +1,6 @@
+// client/src/hooks/useAuth.ts
 import { useState, useEffect } from 'react';
-import { User } from '@supabase/supabase-js';
+import { User } from '@supabase/supabase-js'; // User dari Supabase Auth
 import { supabase } from '../lib/supabase';
 
 export function useAuth() {
@@ -18,6 +19,13 @@ export function useAuth() {
       (event, session) => {
         setUser(session?.user ?? null);
         setLoading(false);
+        // Jika Anda perlu melakukan sesuatu setelah login/logout
+        // Anda bisa menambahkan logika di sini, misal:
+        // if (event === 'SIGNED_IN') {
+        //   console.log('User signed in:', session?.user);
+        // } else if (event === 'SIGNED_OUT') {
+        //   console.log('User signed out');
+        // }
       }
     );
 

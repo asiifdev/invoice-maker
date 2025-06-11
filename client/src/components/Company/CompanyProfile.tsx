@@ -1,9 +1,21 @@
-import React, { useState, useRef } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Building, Mail, Phone, MapPin, Globe, FileText, Edit, Save, X, Upload, Image } from 'lucide-react';
-import { Company } from '../../types';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../hooks/useAuth';
+import React, { useState, useRef } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  Building,
+  Mail,
+  Phone,
+  MapPin,
+  Globe,
+  FileText,
+  Edit,
+  Save,
+  X,
+  Upload,
+  Image,
+} from "lucide-react";
+import { Company } from "../../types";
+import { supabase } from "../../lib/supabase";
+import { useAuth } from "../../hooks/useAuth";
 
 export function CompanyProfile() {
   const { user } = useAuth();
@@ -14,16 +26,16 @@ export function CompanyProfile() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: company, isLoading: loading } = useQuery({
-    queryKey: ['company', user?.id],
+    queryKey: ["company", user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
       const { data, error } = await supabase
-        .from('companies')
-        .select('*')
-        .eq('user_id', user.id)
+        .from("companies")
+        .select("*")
+        .eq("user_id", user.id)
         .single();
 
-      if (error && error.code !== 'PGRST116') {
+      if (error && error.code !== "PGRST116") {
         throw error;
       }
 
@@ -35,7 +47,7 @@ export function CompanyProfile() {
   const createCompanyMutation = useMutation({
     mutationFn: async (companyData: Partial<Company>) => {
       const { data, error } = await supabase
-        .from('companies')
+        .from("companies")
         .insert([{ ...companyData, user_id: user?.id }])
         .select()
         .single();
@@ -44,7 +56,7 @@ export function CompanyProfile() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['company', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["company", user?.id] });
       setIsEditing(false);
       setLogoFile(null);
       setLogoPreview(null);
@@ -69,18 +81,21 @@ export function CompanyProfile() {
 
   const uploadLogoMutation = useMutation({
     mutationFn: async (file: File) => {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user?.id}-${Date.now()}.${fileExt}`;
-      
+      const fileExt = file.name.split(".").pop();
+      if (!user?.id) {
+        throw new Error("User not authenticated for upload.");
+      }
+      const pathInBucket = `${user.id}/${Date.now()}.${fileExt}`; // Mengunggah ke folder user.id
+
       const { data, error } = await supabase.storage
-        .from('company-logos')
-        .upload(fileName, file);
+        .from("company-logos")
+        .upload(pathInBucket, file);
 
       if (error) throw error;
-      
-      const { data: { publicUrl } } = supabase.storage
-        .from('company-logos')
-        .getPublicUrl(fileName);
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("company-logos").getPublicUrl(pathInBucket);
 
       return publicUrl;
     },
@@ -96,10 +111,10 @@ export function CompanyProfile() {
       }
 
       const { data, error } = await supabase
-        .from('companies')
+        .from("companies")
         .update({ ...companyData, logo_url: logoUrl })
-        .eq('id', company?.id)
-        .eq('user_id', user?.id)
+        .eq("id", company?.id)
+        .eq("user_id", user?.id)
         .select()
         .single();
 
@@ -107,21 +122,21 @@ export function CompanyProfile() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['company', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["company", user?.id] });
       setIsEditing(false);
     },
   });
 
   const handleCreateDefaultCompany = () => {
     const defaultCompany: Partial<Company> = {
-      name: 'Nama Perusahaan Anda',
-      email: 'hello@perusahaan.com',
-      phone: '+62 812-3456-7890',
-      address: 'Jl. Contoh No. 123',
-      city: 'Jakarta',
-      country: 'Indonesia',
-      website: 'www.perusahaan.com',
-      tax_id: 'NPWP123456789',
+      name: "Nama Perusahaan Anda",
+      email: "hello@perusahaan.com",
+      phone: "+62 812-3456-7890",
+      address: "Jl. Contoh No. 123",
+      city: "Jakarta",
+      country: "Indonesia",
+      website: "www.perusahaan.com",
+      tax_id: "NPWP123456789",
     };
     createCompanyMutation.mutate(defaultCompany);
   };
@@ -129,19 +144,19 @@ export function CompanyProfile() {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    
+
     const companyData: Partial<Company> = {
-      name: formData.get('name') as string,
-      email: formData.get('email') as string,
-      phone: formData.get('phone') as string,
-      address: formData.get('address') as string,
-      city: formData.get('city') as string,
-      country: formData.get('country') as string,
-      website: formData.get('website') as string,
-      tax_id: formData.get('tax_id') as string,
-      logo_url: formData.get('logo_url') as string,
+      name: formData.get("name") as string,
+      email: formData.get("email") as string,
+      phone: formData.get("phone") as string,
+      address: formData.get("address") as string,
+      city: formData.get("city") as string,
+      country: formData.get("country") as string,
+      website: formData.get("website") as string,
+      tax_id: formData.get("tax_id") as string,
+      logo_url: formData.get("logo_url") as string,
     };
-    
+
     if (company) {
       updateCompanyMutation.mutate(companyData);
     } else {
@@ -166,14 +181,17 @@ export function CompanyProfile() {
             Belum Ada Profil Perusahaan
           </h2>
           <p className="text-gray-600 mb-6">
-            Buat profil perusahaan untuk mulai mengelola invoice dan data bisnis Anda.
+            Buat profil perusahaan untuk mulai mengelola invoice dan data bisnis
+            Anda.
           </p>
           <button
             onClick={handleCreateDefaultCompany}
             disabled={createCompanyMutation.isPending}
             className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
           >
-            {createCompanyMutation.isPending ? 'Membuat...' : 'Buat Profil Perusahaan'}
+            {createCompanyMutation.isPending
+              ? "Membuat..."
+              : "Buat Profil Perusahaan"}
           </button>
         </div>
       </div>
@@ -184,13 +202,19 @@ export function CompanyProfile() {
     <div className="max-w-4xl mx-auto">
       <div className="bg-white rounded-lg shadow-sm border">
         <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">Profil Perusahaan</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Profil Perusahaan
+          </h1>
           <button
             onClick={() => setIsEditing(!isEditing)}
             className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg"
           >
-            {isEditing ? <X className="h-4 w-4" /> : <Edit className="h-4 w-4" />}
-            {isEditing ? 'Batal' : 'Edit'}
+            {isEditing ? (
+              <X className="h-4 w-4" />
+            ) : (
+              <Edit className="h-4 w-4" />
+            )}
+            {isEditing ? "Batal" : "Edit"}
           </button>
         </div>
 
@@ -200,9 +224,9 @@ export function CompanyProfile() {
             <div className="flex-shrink-0">
               <div className="w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
                 {company.logo_url ? (
-                  <img 
-                    src={company.logo_url} 
-                    alt="Company Logo" 
+                  <img
+                    src={company.logo_url}
+                    alt="Company Logo"
                     className="w-full h-full object-cover rounded-lg"
                   />
                 ) : (
@@ -211,7 +235,9 @@ export function CompanyProfile() {
               </div>
             </div>
             <div className="flex-1">
-              <h2 className="text-xl font-semibold text-gray-900">{company.name}</h2>
+              <h2 className="text-xl font-semibold text-gray-900">
+                {company.name}
+              </h2>
               <p className="text-gray-600">{company.email}</p>
               <p className="text-gray-600">{company.phone}</p>
             </div>
@@ -227,15 +253,15 @@ export function CompanyProfile() {
                 <div className="flex items-start space-x-4">
                   <div className="w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300 overflow-hidden">
                     {logoPreview ? (
-                      <img 
-                        src={logoPreview} 
-                        alt="Preview Logo" 
+                      <img
+                        src={logoPreview}
+                        alt="Preview Logo"
                         className="w-full h-full object-cover rounded-lg"
                       />
                     ) : company.logo_url ? (
-                      <img 
-                        src={company.logo_url} 
-                        alt="Company Logo" 
+                      <img
+                        src={company.logo_url}
+                        alt="Company Logo"
                         className="w-full h-full object-cover rounded-lg"
                       />
                     ) : (
@@ -312,20 +338,7 @@ export function CompanyProfile() {
                   <input
                     type="url"
                     name="website"
-                    defaultValue={company.website || ''}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    URL Logo
-                  </label>
-                  <input
-                    type="url"
-                    name="logo_url"
-                    defaultValue={company.logo_url || ''}
-                    placeholder="https://example.com/logo.png"
+                    defaultValue={company.website || ""}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -376,7 +389,7 @@ export function CompanyProfile() {
                   <input
                     type="text"
                     name="tax_id"
-                    defaultValue={company.tax_id || ''}
+                    defaultValue={company.tax_id || ""}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -396,7 +409,7 @@ export function CompanyProfile() {
                   className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
                 >
                   <Save className="h-4 w-4" />
-                  {updateCompanyMutation.isPending ? 'Menyimpan...' : 'Simpan'}
+                  {updateCompanyMutation.isPending ? "Menyimpan..." : "Simpan"}
                 </button>
               </div>
             </form>

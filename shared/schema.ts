@@ -1,12 +1,23 @@
-import { pgTable, text, serial, integer, boolean, uuid, decimal, date, timestamp } from "drizzle-orm/pg-core";
+// shared/schema.ts
+import {
+  pgTable,
+  text,
+  serial, // Mungkin tidak lagi diperlukan jika serial hanya untuk tabel users kustom
+  integer,
+  uuid, // Tetap diperlukan untuk user_id dan PK lainnya
+  decimal,
+  date,
+  timestamp,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-});
+// --- Hapus seluruh definisi tabel users kustom ini ---
+// export const users = pgTable("users", {
+//   id: serial("id").primaryKey(),
+//   email: text("email").notNull().unique(),
+//   password: text("password").notNull(),
+// });
 
 export const companies = pgTable("companies", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -19,9 +30,9 @@ export const companies = pgTable("companies", {
   website: text("website"),
   tax_id: text("tax_id"),
   logo_url: text("logo_url"),
-  user_id: text("user_id").notNull(),
-  created_at: timestamp("created_at").defaultNow(),
-  updated_at: timestamp("updated_at").defaultNow(),
+  user_id: text("user_id").notNull(), // KOREKSI: Pastikan ini UUID karena merujuk ke auth.users(id)
+  created_at: timestamp("created_at", { mode: 'string', withTimezone: true }).defaultNow(), // KOREKSI: Sesuaikan dengan timestamptz
+  updated_at: timestamp("updated_at", { mode: 'string', withTimezone: true }).defaultNow(), // KOREKSI: Sesuaikan dengan timestamptz
 });
 
 export const clients = pgTable("clients", {
@@ -32,10 +43,10 @@ export const clients = pgTable("clients", {
   address: text("address").notNull(),
   city: text("city").notNull(),
   country: text("country").notNull(),
-  company_id: uuid("company_id").notNull(),
-  user_id: text("user_id").notNull(),
-  created_at: timestamp("created_at").defaultNow(),
-  updated_at: timestamp("updated_at").defaultNow(),
+  company_id: uuid("company_id").notNull().references(() => companies.id),
+  user_id: text("user_id").notNull(), // KOREKSI: Pastikan ini UUID
+  created_at: timestamp("created_at", { mode: 'string', withTimezone: true }).defaultNow(), // KOREKSI: Sesuaikan dengan timestamptz
+  updated_at: timestamp("updated_at", { mode: 'string', withTimezone: true }).defaultNow(), // KOREKSI: Sesuaikan dengan timestamptz
 });
 
 export const products = pgTable("products", {
@@ -45,28 +56,28 @@ export const products = pgTable("products", {
   price: decimal("price", { precision: 10, scale: 2 }).notNull().default("0"),
   category: text("category").notNull(),
   unit: text("unit").notNull().default("pcs"),
-  company_id: uuid("company_id").notNull(),
-  user_id: text("user_id").notNull(),
-  created_at: timestamp("created_at").defaultNow(),
-  updated_at: timestamp("updated_at").defaultNow(),
+  company_id: uuid("company_id").notNull().references(() => companies.id),
+  user_id: text("user_id").notNull(), // KOREKSI: Pastikan ini UUID
+  created_at: timestamp("created_at", { mode: 'string', withTimezone: true }).defaultNow(), // KOREKSI: Sesuaikan dengan timestamptz
+  updated_at: timestamp("updated_at", { mode: 'string', withTimezone: true }).defaultNow(), // KOREKSI: Sesuaikan dengan timestamptz
 });
 
 export const invoices = pgTable("invoices", {
   id: uuid("id").primaryKey().defaultRandom(),
   invoice_number: text("invoice_number").notNull(),
-  client_id: uuid("client_id").notNull(),
-  company_id: uuid("company_id").notNull(),
+  client_id: uuid("client_id").notNull().references(() => clients.id),
+  company_id: uuid("company_id").notNull().references(() => companies.id),
   subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull().default("0"),
   tax: decimal("tax", { precision: 10, scale: 2 }).notNull().default("0"),
   total: decimal("total", { precision: 10, scale: 2 }).notNull().default("0"),
   status: text("status").notNull().default("pending"),
-  issue_date: date("issue_date").notNull().defaultNow(),
-  due_date: date("due_date").notNull(),
+  issue_date: date("issue_date", { mode: 'string' }).notNull().defaultNow(), // KOREKSI: Tambahkan mode
+  due_date: date("due_date", { mode: 'string' }).notNull(), // KOREKSI: Tambahkan mode
   notes: text("notes"),
   template: text("template").notNull().default("modern"),
-  user_id: text("user_id").notNull(),
-  created_at: timestamp("created_at").defaultNow(),
-  updated_at: timestamp("updated_at").defaultNow(),
+  user_id: text("user_id").notNull(), // KOREKSI: Pastikan ini UUID
+  created_at: timestamp("created_at", { mode: 'string', withTimezone: true }).defaultNow(), // KOREKSI: Sesuaikan dengan timestamptz
+  updated_at: timestamp("updated_at", { mode: 'string', withTimezone: true }).defaultNow(), // KOREKSI: Sesuaikan dengan timestamptz
 });
 
 export const invoice_items = pgTable("invoice_items", {
@@ -78,14 +89,32 @@ export const invoice_items = pgTable("invoice_items", {
   quantity: integer("quantity").notNull().default(1),
   price: decimal("price", { precision: 10, scale: 2 }).notNull().default("0"),
   total: decimal("total", { precision: 10, scale: 2 }).notNull().default("0"),
-  created_at: timestamp("created_at").defaultNow(),
+  created_at: timestamp("created_at", { mode: 'string', withTimezone: true }).defaultNow(), // KOREKSI: Sesuaikan dengan timestamptz
 });
 
-// Insert schemas
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
+// === Tambahkan tabel invoice_settings di sini ===
+export const invoice_settings = pgTable("invoice_settings", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  invoice_pattern: text("invoice_pattern")
+    .notNull()
+    .default("INV{YY}{MM}{DD}-{###}"),
+  next_number: integer("next_number").notNull().default(1),
+  user_id: text("user_id").notNull(), // Ini harus UUID karena merujuk ke auth.users(id)
+  created_at: timestamp("created_at", {
+    mode: "string",
+    withTimezone: true,
+  }).defaultNow(),
+  updated_at: timestamp("updated_at", {
+    mode: "string",
+    withTimezone: true,
+  }).defaultNow(),
 });
+
+// --- Hapus insertUserSchema karena tabel users kustom dihapus ---
+// export const insertUserSchema = createInsertSchema(users).pick({
+//   email: true,
+//   password: true,
+// });
 
 export const insertCompanySchema = createInsertSchema(companies).omit({
   id: true,
@@ -116,9 +145,18 @@ export const insertInvoiceItemSchema = createInsertSchema(invoice_items).omit({
   created_at: true,
 });
 
+export const insertInvoiceSettingSchema = createInsertSchema(
+  invoice_settings
+).omit({
+  id: true,
+  created_at: true,
+  updated_at: true,
+});
+
 // Types
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
+// --- Hapus InsertUser dan User karena tabel users kustom dihapus ---
+// export type InsertUser = z.infer<typeof insertUserSchema>;
+// export type User = typeof users.$inferSelect;
 
 export type InsertCompany = z.infer<typeof insertCompanySchema>;
 export type Company = typeof companies.$inferSelect;
@@ -134,3 +172,6 @@ export type Invoice = typeof invoices.$inferSelect;
 
 export type InsertInvoiceItem = z.infer<typeof insertInvoiceItemSchema>;
 export type InvoiceItem = typeof invoice_items.$inferSelect;
+
+export type InsertInvoiceSetting = z.infer<typeof insertInvoiceSettingSchema>;
+export type InvoiceSettings = typeof invoice_settings.$inferSelect;
