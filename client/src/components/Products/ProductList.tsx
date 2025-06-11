@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Plus, Search, Package } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Plus, Search, Package, Edit, Trash2 } from 'lucide-react';
 import { Product } from '../../types';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
+import { ProductForm } from './ProductForm';
 
 interface ProductListProps {
   onCreateProduct: () => void;
@@ -11,7 +12,10 @@ interface ProductListProps {
 
 export function ProductList({ onCreateProduct }: ProductListProps) {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const { data: products = [], isLoading: loading } = useQuery({
     queryKey: ['products', user?.id],
@@ -28,6 +32,42 @@ export function ProductList({ onCreateProduct }: ProductListProps) {
     },
     enabled: !!user?.id,
   });
+
+  const deleteProductMutation = useMutation({
+    mutationFn: async (productId: string) => {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', productId)
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products', user?.id] });
+    },
+  });
+
+  const handleCreateProduct = () => {
+    setEditingProduct(null);
+    setShowForm(true);
+  };
+
+  const handleEditProduct = (product: Product) => {
+    setEditingProduct(product);
+    setShowForm(true);
+  };
+
+  const handleDeleteProduct = (product: Product) => {
+    if (confirm(`Apakah Anda yakin ingin menghapus produk "${product.name}"?`)) {
+      deleteProductMutation.mutate(product.id);
+    }
+  };
+
+  const handleCloseForm = () => {
+    setShowForm(false);
+    setEditingProduct(null);
+  };
 
   const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -50,7 +90,7 @@ export function ProductList({ onCreateProduct }: ProductListProps) {
           <p className="mt-2 text-gray-600">Kelola katalog produk dan penawaran layanan Anda.</p>
         </div>
         <button
-          onClick={onCreateProduct}
+          onClick={handleCreateProduct}
           className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
         >
           <Plus className="w-4 h-4 mr-2" />
@@ -108,8 +148,22 @@ export function ProductList({ onCreateProduct }: ProductListProps) {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     per {product.unit}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
-                    <button className="hover:text-blue-700 font-medium">Edit</button>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
+                    <button 
+                      onClick={() => handleEditProduct(product)}
+                      className="text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1"
+                    >
+                      <Edit className="w-3 h-3" />
+                      Edit
+                    </button>
+                    <button 
+                      onClick={() => handleDeleteProduct(product)}
+                      className="text-red-600 hover:text-red-700 font-medium inline-flex items-center gap-1"
+                      disabled={deleteProductMutation.isPending}
+                    >
+                      <Trash2 className="w-3 h-3" />
+                      Hapus
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -123,6 +177,13 @@ export function ProductList({ onCreateProduct }: ProductListProps) {
           </div>
         )}
       </div>
+
+      {showForm && (
+        <ProductForm
+          product={editingProduct}
+          onClose={handleCloseForm}
+        />
+      )}
     </div>
   );
 }

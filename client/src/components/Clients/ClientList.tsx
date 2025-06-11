@@ -143,9 +143,21 @@ export function ClientList({ onCreateClient }: ClientListProps) {
                 </div>
               </div>
 
-              <div className="mt-4 pt-4 border-t border-gray-200">
-                <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                  Lihat Detail
+              <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between">
+                <button 
+                  onClick={() => handleEditClient(client)}
+                  className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
+                >
+                  <Edit className="w-3 h-3" />
+                  Edit
+                </button>
+                <button 
+                  onClick={() => handleDeleteClient(client)}
+                  className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center gap-1"
+                  disabled={deleteClientMutation.isPending}
+                >
+                  <Trash2 className="w-3 h-3" />
+                  Hapus
                 </button>
               </div>
             </div>
@@ -158,6 +170,13 @@ export function ClientList({ onCreateClient }: ClientListProps) {
           </div>
         )}
       </div>
+
+      {showForm && (
+        <ClientForm
+          client={editingClient}
+          onClose={handleCloseForm}
+        />
+      )}
     </div>
   );
 }
