@@ -130,7 +130,7 @@ export function InvoiceList({ onCreateInvoice, onViewInvoice }: InvoiceListProps
           <p className="mt-2 text-gray-600">Buat, kelola, dan lacak invoice Anda.</p>
         </div>
         <button
-          onClick={onCreateInvoice}
+          onClick={handleCreateInvoice}
           className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
         >
           <Plus className="w-4 h-4 mr-2" />
@@ -209,6 +209,21 @@ export function InvoiceList({ onCreateInvoice, onViewInvoice }: InvoiceListProps
                       >
                         <Eye className="w-4 h-4" />
                       </button>
+                      <button
+                        onClick={() => handleEditInvoice(invoice)}
+                        className="text-yellow-600 hover:text-yellow-700 font-medium"
+                        title="Edit Invoice"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteInvoice(invoice)}
+                        className="text-red-600 hover:text-red-700 font-medium"
+                        title="Hapus Invoice"
+                        disabled={deleteInvoiceMutation.isPending}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                       <button 
                         className="text-green-600 hover:text-green-700 font-medium"
                         title="Unduh PDF"
@@ -223,6 +238,13 @@ export function InvoiceList({ onCreateInvoice, onViewInvoice }: InvoiceListProps
           </table>
         </div>
       </div>
+
+      {showForm && (
+        <InvoiceForm
+          invoice={editingInvoice}
+          onClose={handleCloseForm}
+        />
+      )}
     </div>
   );
 }
