@@ -38,15 +38,15 @@ export function StatsCard({ title, value, change, trend, icon: Icon, color }: St
   const classes = colorClasses[color];
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-shadow duration-300">
+    <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 hover:shadow-lg transition-shadow duration-300">
       <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{value}</p>
-          <p className={`mt-2 text-sm ${trendColor}`}>{change}</p>
+        <div className="min-w-0 flex-1">
+          <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">{title}</p>
+          <p className="mt-2 text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 truncate">{value}</p>
+          <p className={`mt-2 text-xs sm:text-sm ${trendColor} truncate`}>{change}</p>
         </div>
-        <div className={`p-3 rounded-lg ${classes.bg} ${classes.border} border`}>
-          <Icon className={`w-6 h-6 ${classes.icon}`} />
+        <div className={`p-2 sm:p-3 rounded-lg ${classes.bg} ${classes.border} border flex-shrink-0 ml-4`}>
+          <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${classes.icon}`} />
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Search, Download, Eye, Edit, Trash2 } from 'lucide-react';
+import { Plus, Search, Download, Eye, Edit, Trash2, Filter } from 'lucide-react';
 import { Invoice } from '../../types';
 import { InvoiceForm } from './InvoiceForm';
 import { supabase } from '../../lib/supabase';
@@ -18,6 +18,7 @@ export function InvoiceList({ onCreateInvoice, onViewInvoice }: InvoiceListProps
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showForm, setShowForm] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
 
   const deleteInvoiceMutation = useMutation({
     mutationFn: async (invoiceId: string) => {
@@ -123,25 +124,28 @@ export function InvoiceList({ onCreateInvoice, onViewInvoice }: InvoiceListProps
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Invoice</h1>
-          <p className="mt-2 text-gray-600">Buat, kelola, dan lacak invoice Anda.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Invoice</h1>
+          <p className="mt-2 text-sm sm:text-base text-gray-600">Buat, kelola, dan lacak invoice Anda.</p>
         </div>
         <button
           onClick={handleCreateInvoice}
-          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+          className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 w-full sm:w-auto"
         >
           <Plus className="w-4 h-4 mr-2" />
           Buat Invoice
         </button>
       </div>
 
+      {/* Filters */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
+        <div className="p-4 sm:p-6 border-b border-gray-200">
+          <div className="flex flex-col gap-4">
+            {/* Search */}
+            <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
@@ -151,20 +155,87 @@ export function InvoiceList({ onCreateInvoice, onViewInvoice }: InvoiceListProps
                 className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="all">Semua Status</option>
-              <option value="paid">Lunas</option>
-              <option value="pending">Tertunda</option>
-              <option value="overdue">Terlambat</option>
-            </select>
+            
+            {/* Mobile filter toggle */}
+            <div className="flex items-center justify-between sm:hidden">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg"
+              >
+                <Filter className="w-4 h-4" />
+                Filter
+              </button>
+            </div>
+
+            {/* Status filter */}
+            <div className={`${showFilters ? 'block' : 'hidden'} sm:block`}>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="all">Semua Status</option>
+                <option value="paid">Lunas</option>
+                <option value="pending">Tertunda</option>
+                <option value="overdue">Terlambat</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Mobile Invoice Cards */}
+        <div className="block sm:hidden">
+          {filteredInvoices.map((invoice) => (
+            <div key={invoice.id} className="border-b border-gray-200 p-4 space-y-3">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="font-medium text-gray-900">{invoice.invoice_number}</p>
+                  <p className="text-sm text-gray-600">{(invoice as any).clients?.name || 'N/A'}</p>
+                </div>
+                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(invoice.status)}`}>
+                  {getStatusText(invoice.status)}
+                </span>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-sm font-medium text-gray-900">Rp {invoice.total.toLocaleString('id-ID')}</p>
+                  <p className="text-xs text-gray-500">
+                    Jatuh tempo: {new Date(invoice.due_date).toLocaleDateString('id-ID')}
+                  </p>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => onViewInvoice(invoice)}
+                    className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg"
+                    title="Lihat Invoice"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleEditInvoice(invoice)}
+                    className="p-2 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 rounded-lg"
+                    title="Edit Invoice"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteInvoice(invoice)}
+                    className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg"
+                    title="Hapus Invoice"
+                    disabled={deleteInvoiceMutation.isPending}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop Table */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
@@ -237,6 +308,17 @@ export function InvoiceList({ onCreateInvoice, onViewInvoice }: InvoiceListProps
             </tbody>
           </table>
         </div>
+
+        {filteredInvoices.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500">
+              {searchTerm || statusFilter !== 'all' 
+                ? 'Tidak ada invoice yang sesuai dengan filter.' 
+                : 'Belum ada invoice. Buat invoice pertama Anda!'
+              }
+            </p>
+          </div>
+        )}
       </div>
 
       {showForm && (

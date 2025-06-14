@@ -67,15 +67,17 @@ export function Dashboard() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dasbor</h1>
-          <p className="mt-2 text-gray-600">Selamat datang kembali! Berikut ringkasan bisnis Anda.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Dasbor</h1>
+          <p className="mt-2 text-sm sm:text-base text-gray-600">Selamat datang kembali! Berikut ringkasan bisnis Anda.</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <StatsCard
           title="Total Pendapatan"
           value={`Rp ${totalRevenue.toLocaleString('id-ID')}`}
@@ -110,11 +112,42 @@ export function Dashboard() {
         />
       </div>
 
+      {/* Recent Invoices Table */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
+        <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">Invoice Terbaru</h2>
         </div>
-        <div className="overflow-x-auto">
+        
+        {/* Mobile view */}
+        <div className="block sm:hidden">
+          {recentInvoices.map((invoice) => (
+            <div key={invoice.id} className="border-b border-gray-200 p-4 space-y-2">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="font-medium text-gray-900">{invoice.invoice_number}</p>
+                  <p className="text-sm text-gray-600">{(invoice as any).clients?.name || 'N/A'}</p>
+                </div>
+                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                  invoice.status === 'paid' 
+                    ? 'bg-green-100 text-green-800'
+                    : invoice.status === 'pending'
+                    ? 'bg-yellow-100 text-yellow-800'
+                    : 'bg-red-100 text-red-800'
+                }`}>
+                  {invoice.status === 'paid' ? 'Lunas' : 
+                   invoice.status === 'pending' ? 'Tertunda' : 'Terlambat'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <p className="text-sm font-medium text-gray-900">Rp {invoice.total.toLocaleString('id-ID')}</p>
+                <p className="text-xs text-gray-500">{new Date(invoice.due_date).toLocaleDateString('id-ID')}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop view */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
@@ -157,6 +190,12 @@ export function Dashboard() {
             </tbody>
           </table>
         </div>
+
+        {recentInvoices.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500">Belum ada invoice. Buat invoice pertama Anda!</p>
+          </div>
+        )}
       </div>
     </div>
   );
