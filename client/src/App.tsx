@@ -85,7 +85,7 @@ function App() {
 
   return (
     <div className="h-screen bg-gray-50 flex overflow-hidden">
-      {/* Desktop Sidebar - Always visible on large screens */}
+      {/* Desktop Sidebar */}
       <div className="hidden lg:flex lg:flex-shrink-0">
         <div className="w-64">
           <Sidebar 
