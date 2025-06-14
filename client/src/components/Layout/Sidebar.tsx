@@ -7,8 +7,8 @@ import {
   Package, 
   Building,
   Settings,
-  LogOut,
-  X
+  TrendingUp,
+  LogOut
 } from 'lucide-react';
 import { NavigationTab } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
@@ -17,8 +17,6 @@ import { supabase } from '../../lib/supabase';
 interface SidebarProps {
   activeTab: NavigationTab;
   onTabChange: (tab: NavigationTab) => void;
-  isMobile?: boolean;
-  onClose?: () => void;
 }
 
 const navigationItems = [
@@ -30,7 +28,7 @@ const navigationItems = [
   { id: 'settings' as const, label: 'Pengaturan', icon: Settings },
 ];
 
-export function Sidebar({ activeTab, onTabChange, isMobile = false, onClose }: SidebarProps) {
+export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   const { signOut, user } = useAuth();
 
   const { data: company } = useQuery({
@@ -57,54 +55,20 @@ export function Sidebar({ activeTab, onTabChange, isMobile = false, onClose }: S
   };
 
   return (
-    <div className="w-full h-full bg-white border-r border-gray-200 flex flex-col shadow-lg">
-      {/* Mobile Close Button */}
-      {isMobile && (
-        <div className="flex justify-end p-4 border-b border-gray-200">
-          <button
-            onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-          >
-            <X className="w-6 h-6 text-gray-600" />
-          </button>
-        </div>
-      )}
-
-      {/* Company Header */}
+    <div className="w-64 bg-white border-r border-gray-200 h-full flex flex-col">
       <div className="p-6 border-b border-gray-200">
-        {company ? (
-          <div className="flex items-center space-x-3">
-            {company.logo_url ? (
-              <img 
-                src={company.logo_url} 
-                alt="Company Logo" 
-                className="w-12 h-12 rounded-lg object-cover border border-gray-200"
-              />
-            ) : (
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
-                <Building className="w-6 h-6 text-white" />
-              </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <h1 className="text-lg font-bold text-gray-900 truncate">{company.name}</h1>
-              <p className="text-sm text-gray-500 truncate">{company.email}</p>
-            </div>
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+            <TrendingUp className="w-5 h-5 text-white" />
           </div>
-        ) : (
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
-              <Building className="w-6 h-6 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-lg font-bold text-gray-900">InvoicePro</h1>
-              <p className="text-sm text-gray-500">Setup your company</p>
-            </div>
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">InvoicePro</h1>
+            <p className="text-sm text-gray-500">Invoice Profesional</p>
           </div>
-        )}
+        </div>
       </div>
       
-      {/* Navigation */}
-      <nav className="flex-1 p-4 overflow-y-auto">
+      <nav className="flex-1 p-4">
         <ul className="space-y-2">
           {navigationItems.map((item) => {
             const Icon = item.icon;
@@ -114,19 +78,14 @@ export function Sidebar({ activeTab, onTabChange, isMobile = false, onClose }: S
               <li key={item.id}>
                 <button
                   onClick={() => onTabChange(item.id)}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 group ${
+                  className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200 ${
                     isActive
-                      ? 'bg-blue-50 text-blue-700 border border-blue-200 shadow-sm'
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200'
                       : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                   }`}
                 >
-                  <Icon className={`w-5 h-5 flex-shrink-0 transition-colors duration-200 ${
-                    isActive ? 'text-blue-600' : 'text-gray-500 group-hover:text-gray-700'
-                  }`} />
-                  <span className="font-medium truncate">{item.label}</span>
-                  {isActive && (
-                    <div className="w-2 h-2 bg-blue-600 rounded-full ml-auto flex-shrink-0"></div>
-                  )}
+                  <Icon className={`w-5 h-5 ${isActive ? 'text-blue-600' : 'text-gray-500'}`} />
+                  <span className="font-medium">{item.label}</span>
                 </button>
               </li>
             );
@@ -134,22 +93,14 @@ export function Sidebar({ activeTab, onTabChange, isMobile = false, onClose }: S
         </ul>
       </nav>
 
-      {/* Footer */}
       <div className="p-4 border-t border-gray-200">
         <button
           onClick={handleSignOut}
-          className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 text-gray-700 hover:bg-red-50 hover:text-red-700 group"
+          className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
         >
-          <LogOut className="w-5 h-5 text-gray-500 group-hover:text-red-600 transition-colors duration-200" />
+          <LogOut className="w-5 h-5 text-gray-500" />
           <span className="font-medium">Keluar</span>
         </button>
-        
-        {/* User Info */}
-        {user && (
-          <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-            <p className="text-xs text-gray-600 truncate">{user.email}</p>
-          </div>
-        )}
       </div>
     </div>
   );
