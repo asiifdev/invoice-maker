@@ -10,6 +10,7 @@ import { InvoiceSettings } from './components/Settings/InvoiceSettings';
 import { AuthForm } from './components/Auth/AuthForm';
 import { NavigationTab, Invoice } from './types';
 import { useAuth } from './hooks/useAuth';
+import { Menu } from 'lucide-react';
 
 function App() {
   const { user, loading } = useAuth();
@@ -70,51 +71,68 @@ function App() {
     }
   };
 
+  const getPageTitle = () => {
+    switch (activeTab) {
+      case 'dashboard': return 'Dasbor';
+      case 'invoices': return 'Invoice';
+      case 'clients': return 'Klien';
+      case 'products': return 'Produk';
+      case 'company': return 'Perusahaan';
+      case 'settings': return 'Pengaturan';
+      default: return 'Dasbor';
+    }
+  };
+
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div className="h-screen bg-gray-50 flex overflow-hidden">
+      {/* Desktop Sidebar - Always visible on large screens */}
+      <div className="hidden lg:flex lg:flex-shrink-0">
+        <Sidebar 
+          activeTab={activeTab} 
+          onTabChange={setActiveTab}
+          isMobileOpen={false}
+          onMobileToggle={() => {}}
+        />
+      </div>
+
+      {/* Mobile Sidebar - Overlay on small screens */}
       <Sidebar 
         activeTab={activeTab} 
         onTabChange={(tab) => {
           setActiveTab(tab);
-          setIsMobileSidebarOpen(false); // Close mobile sidebar when tab changes
+          setIsMobileSidebarOpen(false);
         }}
         isMobileOpen={isMobileSidebarOpen}
         onMobileToggle={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
       />
       
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col overflow-hidden">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col overflow-hidden">
         {/* Mobile Header */}
-        <div className="lg:hidden bg-white border-b border-gray-200 p-4">
+        <div className="lg:hidden bg-white border-b border-gray-200 px-4 py-3">
           <div className="flex items-center justify-between">
             <button
               onClick={() => setIsMobileSidebarOpen(true)}
               className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
             >
-              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+              <Menu className="w-6 h-6 text-gray-600" />
             </button>
-            <h1 className="text-lg font-semibold text-gray-900 capitalize">
-              {activeTab === 'dashboard' ? 'Dasbor' : 
-               activeTab === 'invoices' ? 'Invoice' :
-               activeTab === 'clients' ? 'Klien' :
-               activeTab === 'products' ? 'Produk' :
-               activeTab === 'company' ? 'Perusahaan' :
-               activeTab === 'settings' ? 'Pengaturan' : activeTab}
+            <h1 className="text-lg font-semibold text-gray-900">
+              {getPageTitle()}
             </h1>
             <div className="w-10"></div> {/* Spacer for centering */}
           </div>
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-auto">
           <div className="p-4 lg:p-8">
             {renderContent()}
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
 
+      {/* Invoice Preview Modal */}
       {selectedInvoice && (
         <InvoicePreview
           invoice={selectedInvoice}
