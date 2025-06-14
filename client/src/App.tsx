@@ -16,7 +16,7 @@ function App() {
   const { user, loading } = useAuth();
   const [activeTab, setActiveTab] = useState<NavigationTab>('dashboard');
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Default false untuk desktop juga
 
   if (loading) {
     return (
@@ -81,31 +81,46 @@ function App() {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - Hidden by default, can be toggled */}
       <div className={`
-        fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0
+        fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out
+        lg:relative lg:z-auto
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <Sidebar 
           activeTab={activeTab} 
           onTabChange={(tab) => {
             setActiveTab(tab);
-            setSidebarOpen(false); // Close sidebar on mobile after selection
+            // Close sidebar on mobile after selection, keep open on desktop
+            if (window.innerWidth < 1024) {
+              setSidebarOpen(false);
+            }
           }} 
         />
       </div>
 
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Mobile header */}
-        <div className="lg:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+        {/* Header with hamburger menu */}
+        <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
           <button
-            onClick={() => setSidebarOpen(true)}
-            className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
           >
-            <Menu className="h-6 w-6" />
+            {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
-          <h1 className="text-lg font-semibold text-gray-900">InvoicePro</h1>
+          
+          <div className="flex-1 text-center lg:text-left lg:ml-4">
+            <h1 className="text-lg font-semibold text-gray-900">
+              {activeTab === 'dashboard' && 'Dasbor'}
+              {activeTab === 'invoices' && 'Invoice'}
+              {activeTab === 'clients' && 'Klien'}
+              {activeTab === 'products' && 'Produk'}
+              {activeTab === 'company' && 'Perusahaan'}
+              {activeTab === 'settings' && 'Pengaturan'}
+            </h1>
+          </div>
+          
           <div className="w-10" /> {/* Spacer for centering */}
         </div>
 
