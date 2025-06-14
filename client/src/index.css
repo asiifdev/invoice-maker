@@ -22,6 +22,25 @@
   --gray-900: #111827;
 }
 
+/* Sidebar transition styles */
+.sidebar {
+  transition: width var(--transition-duration) ease;
+}
+
+.sidebar.collapsed {
+  width: var(--sidebar-collapsed-width);
+}
+
+.sidebar.collapsed .menu-text {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+.menu-text {
+  transition: opacity var(--transition-duration) ease, width var(--transition-duration) ease;
+}
+
 /* Mobile-first responsive design */
 @media (max-width: 767px) {
   .mobile-padding {

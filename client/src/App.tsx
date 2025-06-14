@@ -10,7 +10,7 @@ import { InvoiceSettings } from './components/Settings/InvoiceSettings';
 import { AuthForm } from './components/Auth/AuthForm';
 import { NavigationTab, Invoice } from './types';
 import { useAuth } from './hooks/useAuth';
-import { Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 
 function App() {
   const { user, loading } = useAuth();
@@ -102,6 +102,16 @@ function App() {
     return <AuthForm />;
   }
 
+  const handleSidebarToggle = () => {
+    if (window.innerWidth >= 1024) {
+      // Desktop: Toggle collapsed state
+      setSidebarCollapsed(!sidebarCollapsed);
+    } else {
+      // Mobile/Tablet: Toggle open state
+      setSidebarOpen(!sidebarOpen);
+    }
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
@@ -169,24 +179,19 @@ function App() {
           style={{ gridArea: 'header' }}
         >
           <div className="flex items-center space-x-3">
-            {/* Mobile hamburger menu */}
+            {/* ONLY Hamburger menu button */}
             <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200 lg:hidden"
+              onClick={handleSidebarToggle}
+              className="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200"
+              title={window.innerWidth >= 1024 
+                ? (sidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar')
+                : (sidebarOpen ? 'Close Menu' : 'Open Menu')
+              }
             >
-              {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-            
-            {/* Desktop sidebar toggle */}
-            <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="hidden lg:flex p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200"
-              title={sidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
-            >
-              {sidebarCollapsed ? (
-                <ChevronRight className="h-5 w-5" />
+              {window.innerWidth >= 1024 ? (
+                <Menu className="h-6 w-6" />
               ) : (
-                <ChevronLeft className="h-5 w-5" />
+                sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />
               )}
             </button>
             

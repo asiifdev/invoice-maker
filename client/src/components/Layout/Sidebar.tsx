@@ -72,28 +72,26 @@ export function Sidebar({ activeTab, onTabChange, collapsed = false }: SidebarPr
             )}
           </div>
           
-          {/* Company Info */}
-          {!collapsed && (
-            <div className="min-w-0 flex-1 transition-opacity duration-300">
-              <h1 className="text-sm font-bold text-white truncate">
-                {company?.name || 'Nama Perusahaan'}
-              </h1>
-              <p className="text-xs text-gray-300 truncate">
-                {company?.email || user?.email || 'email@perusahaan.com'}
+          {/* Company Info - Hidden when collapsed */}
+          <div className={`min-w-0 flex-1 transition-all duration-300 ${collapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
+            <h1 className="text-sm font-bold text-white truncate">
+              {company?.name || 'Nama Perusahaan'}
+            </h1>
+            <p className="text-xs text-gray-300 truncate">
+              {company?.email || user?.email || 'email@perusahaan.com'}
+            </p>
+            {company?.tax_id && (
+              <p className="text-xs text-gray-400 truncate">
+                NPWP: {company.tax_id}
               </p>
-              {company?.tax_id && (
-                <p className="text-xs text-gray-400 truncate">
-                  NPWP: {company.tax_id}
-                </p>
-              )}
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
       
       {/* Navigation */}
       <nav className={`flex-1 ${collapsed ? 'p-2' : 'p-4'} overflow-y-auto transition-all duration-300`}>
-        <ul className={`space-y-2`}>
+        <ul className="space-y-2">
           {navigationItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -110,9 +108,11 @@ export function Sidebar({ activeTab, onTabChange, collapsed = false }: SidebarPr
                   title={collapsed ? item.label : undefined}
                 >
                   <Icon className={`${collapsed ? 'w-6 h-6' : 'w-5 h-5'} flex-shrink-0 transition-all duration-300 ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'}`} />
-                  {!collapsed && (
-                    <span className="font-medium truncate transition-opacity duration-300">{item.label}</span>
-                  )}
+                  
+                  {/* Menu Text - Hidden when collapsed */}
+                  <span className={`font-medium truncate transition-all duration-300 menu-text ${collapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
+                    {item.label}
+                  </span>
                   
                   {/* Active indicator */}
                   {isActive && !collapsed && (
@@ -141,9 +141,11 @@ export function Sidebar({ activeTab, onTabChange, collapsed = false }: SidebarPr
           title={collapsed ? 'Keluar' : undefined}
         >
           <LogOut className={`${collapsed ? 'w-6 h-6' : 'w-5 h-5'} text-gray-400 group-hover:text-white flex-shrink-0 transition-all duration-300`} />
-          {!collapsed && (
-            <span className="font-medium truncate transition-opacity duration-300">Keluar</span>
-          )}
+          
+          {/* Logout Text - Hidden when collapsed */}
+          <span className={`font-medium truncate transition-all duration-300 menu-text ${collapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
+            Keluar
+          </span>
           
           {/* Tooltip for collapsed state */}
           {collapsed && (
