@@ -16,7 +16,7 @@ function App() {
   const { user, loading } = useAuth();
   const [activeTab, setActiveTab] = useState<NavigationTab>('dashboard');
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false); // Default false untuk desktop juga
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   if (loading) {
     return (
@@ -81,17 +81,16 @@ function App() {
         />
       )}
 
-      {/* Sidebar - Hidden by default, can be toggled */}
+      {/* Sidebar */}
       <div className={`
-        fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out
-        lg:relative lg:z-auto
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:z-auto
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         <Sidebar 
           activeTab={activeTab} 
           onTabChange={(tab) => {
             setActiveTab(tab);
-            // Close sidebar on mobile after selection, keep open on desktop
+            // Auto-close sidebar on mobile after selection
             if (window.innerWidth < 1024) {
               setSidebarOpen(false);
             }
@@ -102,12 +101,12 @@ function App() {
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header with hamburger menu */}
-        <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+        <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between lg:justify-start">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+            className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors lg:hidden"
           >
-            {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            <Menu className="h-6 w-6" />
           </button>
           
           <div className="flex-1 text-center lg:text-left lg:ml-4">
@@ -121,7 +120,7 @@ function App() {
             </h1>
           </div>
           
-          <div className="w-10" /> {/* Spacer for centering */}
+          <div className="w-10 lg:hidden" />
         </div>
 
         {/* Main content area */}
