@@ -7,6 +7,7 @@ import {
   Package, 
   Building,
   Settings,
+  TrendingUp,
   LogOut
 } from 'lucide-react';
 import { NavigationTab } from '../../types';
@@ -16,7 +17,6 @@ import { supabase } from '../../lib/supabase';
 interface SidebarProps {
   activeTab: NavigationTab;
   onTabChange: (tab: NavigationTab) => void;
-  collapsed?: boolean;
 }
 
 const navigationItems = [
@@ -28,7 +28,7 @@ const navigationItems = [
   { id: 'settings' as const, label: 'Pengaturan', icon: Settings },
 ];
 
-export function Sidebar({ activeTab, onTabChange, collapsed = false }: SidebarProps) {
+export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   const { signOut, user } = useAuth();
 
   const { data: company } = useQuery({
@@ -55,42 +55,20 @@ export function Sidebar({ activeTab, onTabChange, collapsed = false }: SidebarPr
   };
 
   return (
-    <div className={`${collapsed ? 'w-16' : 'w-64'} bg-gray-800 h-full flex flex-col shadow-2xl transition-all duration-300 fixed lg:sticky top-0 z-50`}>
-      {/* Company Header - CLEAN & MODERN */}
-      <div className={`${collapsed ? 'p-3' : 'p-6'} border-b border-gray-700 bg-gradient-to-r from-gray-800 to-gray-900 transition-all duration-300`}>
-        <div className={`flex items-center ${collapsed ? 'justify-center' : 'space-x-4'}`}>
-          {/* Company Logo */}
-          <div className={`${collapsed ? 'w-10 h-10' : 'w-12 h-12'} bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg transition-all duration-300 ring-2 ring-blue-500/20`}>
-            {company?.logo_url ? (
-              <img 
-                src={company.logo_url} 
-                alt="Company Logo" 
-                className={`${collapsed ? 'w-8 h-8' : 'w-10 h-10'} object-contain rounded-lg transition-all duration-300`}
-              />
-            ) : (
-              <Building className={`${collapsed ? 'w-5 h-5' : 'w-6 h-6'} text-white transition-all duration-300`} />
-            )}
+    <div className="w-64 bg-white border-r border-gray-200 h-full flex flex-col">
+      <div className="p-6 border-b border-gray-200">
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+            <TrendingUp className="w-5 h-5 text-white" />
           </div>
-          
-          {/* Company Info - HIDDEN when collapsed */}
-          <div className={`min-w-0 flex-1 transition-all duration-300 brand-text ${collapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
-            <h1 className="text-sm font-bold text-white truncate">
-              {company?.name || 'InvoicePro'}
-            </h1>
-            <p className="text-xs text-gray-300 truncate">
-              {company?.email || user?.email || 'Digital Agency'}
-            </p>
-            {company?.tax_id && (
-              <p className="text-xs text-gray-400 truncate">
-                NPWP: {company.tax_id}
-              </p>
-            )}
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">InvoicePro</h1>
+            <p className="text-sm text-gray-500">Invoice Profesional</p>
           </div>
         </div>
       </div>
       
-      {/* Navigation */}
-      <nav className={`flex-1 ${collapsed ? 'p-2' : 'p-4'} overflow-y-auto transition-all duration-300`}>
+      <nav className="flex-1 p-4">
         <ul className="space-y-2">
           {navigationItems.map((item) => {
             const Icon = item.icon;
@@ -100,32 +78,14 @@ export function Sidebar({ activeTab, onTabChange, collapsed = false }: SidebarPr
               <li key={item.id}>
                 <button
                   onClick={() => onTabChange(item.id)}
-                  className={`w-full flex items-center ${collapsed ? 'justify-center p-3' : 'space-x-3 px-4 py-3'} rounded-xl text-left transition-all duration-300 group relative ${
+                  className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200 ${
                     isActive
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25 scale-105'
-                      : 'text-gray-300 hover:bg-gray-700 hover:text-white hover:scale-105'
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                   }`}
-                  title={collapsed ? item.label : undefined}
                 >
-                  <Icon className={`${collapsed ? 'w-6 h-6' : 'w-5 h-5'} flex-shrink-0 transition-all duration-300 ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'}`} />
-                  
-                  {/* Menu Text - HIDDEN when collapsed */}
-                  <span className={`font-medium truncate transition-all duration-300 menu-text ${collapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
-                    {item.label}
-                  </span>
-                  
-                  {/* Active indicator */}
-                  {isActive && !collapsed && (
-                    <div className="absolute right-2 w-2 h-2 bg-white rounded-full"></div>
-                  )}
-                  
-                  {/* Tooltip for collapsed state */}
-                  {collapsed && (
-                    <div className="absolute left-full ml-3 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 shadow-xl">
-                      {item.label}
-                      <div className="absolute left-0 top-1/2 transform -translate-x-1 -translate-y-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
-                    </div>
-                  )}
+                  <Icon className={`w-5 h-5 ${isActive ? 'text-blue-600' : 'text-gray-500'}`} />
+                  <span className="font-medium">{item.label}</span>
                 </button>
               </li>
             );
@@ -133,27 +93,13 @@ export function Sidebar({ activeTab, onTabChange, collapsed = false }: SidebarPr
         </ul>
       </nav>
 
-      {/* Footer */}
-      <div className={`${collapsed ? 'p-2' : 'p-4'} border-t border-gray-700 bg-gray-900 transition-all duration-300`}>
+      <div className="p-4 border-t border-gray-200">
         <button
           onClick={handleSignOut}
-          className={`w-full flex items-center ${collapsed ? 'justify-center p-3' : 'space-x-3 px-4 py-3'} rounded-xl text-left transition-all duration-300 text-gray-300 hover:bg-red-600 hover:text-white hover:scale-105 group relative`}
-          title={collapsed ? 'Keluar' : undefined}
+          className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
         >
-          <LogOut className={`${collapsed ? 'w-6 h-6' : 'w-5 h-5'} text-gray-400 group-hover:text-white flex-shrink-0 transition-all duration-300`} />
-          
-          {/* Logout Text - HIDDEN when collapsed */}
-          <span className={`font-medium truncate transition-all duration-300 menu-text ${collapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
-            Keluar
-          </span>
-          
-          {/* Tooltip for collapsed state */}
-          {collapsed && (
-            <div className="absolute left-full ml-3 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 shadow-xl">
-              Keluar
-              <div className="absolute left-0 top-1/2 transform -translate-x-1 -translate-y-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
-            </div>
-          )}
+          <LogOut className="w-5 h-5 text-gray-500" />
+          <span className="font-medium">Keluar</span>
         </button>
       </div>
     </div>
