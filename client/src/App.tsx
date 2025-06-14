@@ -84,13 +84,15 @@ function App() {
   };
 
   return (
-    <div className="h-screen bg-gray-50 flex">
+    <div className="h-screen bg-gray-50 flex overflow-hidden">
       {/* Desktop Sidebar - Always visible on large screens */}
-      <div className="hidden lg:block lg:w-64 lg:flex-shrink-0">
-        <Sidebar 
-          activeTab={activeTab} 
-          onTabChange={setActiveTab}
-        />
+      <div className="hidden lg:flex lg:flex-shrink-0">
+        <div className="w-64">
+          <Sidebar 
+            activeTab={activeTab} 
+            onTabChange={setActiveTab}
+          />
+        </div>
       </div>
 
       {/* Mobile Sidebar Overlay */}
@@ -103,7 +105,7 @@ function App() {
 
       {/* Mobile Sidebar */}
       <div className={`
-        lg:hidden fixed inset-y-0 left-0 z-50 w-64 bg-white transform transition-transform duration-300 ease-in-out
+        lg:hidden fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out
         ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <Sidebar 
@@ -118,9 +120,9 @@ function App() {
       </div>
       
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile Header */}
-        <div className="lg:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+        <div className="lg:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between flex-shrink-0">
           <button
             onClick={() => setIsMobileSidebarOpen(true)}
             className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
