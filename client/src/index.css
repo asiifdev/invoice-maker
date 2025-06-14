@@ -22,6 +22,88 @@
   --gray-900: #111827;
 }
 
+/* Mobile-first responsive design */
+@media (max-width: 767px) {
+  .mobile-padding {
+    padding: 1rem;
+  }
+  
+  .mobile-text {
+    font-size: 0.875rem;
+  }
+  
+  .mobile-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .tablet-padding {
+    padding: 1.5rem;
+  }
+  
+  .tablet-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .desktop-padding {
+    padding: 2rem;
+  }
+  
+  .desktop-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+  }
+}
+
+/* CSS Grid Layout System */
+.dashboard-grid {
+  display: grid;
+  height: 100vh;
+  transition: grid-template-columns var(--transition-duration) ease;
+}
+
+/* Mobile Layout (< 768px) */
+@media (max-width: 767px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: var(--header-height) 1fr;
+    grid-template-areas: 
+      "header"
+      "main";
+  }
+}
+
+/* Tablet Layout (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: var(--header-height) 1fr;
+    grid-template-areas: 
+      "header"
+      "main";
+  }
+}
+
+/* Desktop Layout (>= 1024px) */
+@media (min-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: var(--sidebar-width) 1fr;
+    grid-template-rows: var(--header-height) 1fr;
+    grid-template-areas: 
+      "sidebar header"
+      "sidebar main";
+  }
+  
+  .dashboard-grid.collapsed {
+    grid-template-columns: var(--sidebar-collapsed-width) 1fr;
+  }
+}
+
 /* Smooth transitions untuk semua elemen */
 * {
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
@@ -65,25 +147,6 @@
 .focus-visible:focus {
   outline: 2px solid var(--primary-color);
   outline-offset: 2px;
-}
-
-/* Responsive utilities */
-@media (max-width: 767px) {
-  .mobile-padding {
-    padding: 1rem;
-  }
-}
-
-@media (min-width: 768px) and (max-width: 1023px) {
-  .tablet-padding {
-    padding: 1.5rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .desktop-padding {
-    padding: 2rem;
-  }
 }
 
 /* Animation classes */
@@ -340,6 +403,48 @@
   }
 }
 
+/* Responsive breakpoint utilities */
+.mobile-only {
+  display: block;
+}
+
+.tablet-up {
+  display: none;
+}
+
+.desktop-up {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .mobile-only {
+    display: none;
+  }
+  
+  .tablet-up {
+    display: block;
+  }
+}
+
+@media (min-width: 1024px) {
+  .desktop-up {
+    display: block;
+  }
+}
+
+/* Grid area utilities */
+.grid-area-header {
+  grid-area: header;
+}
+
+.grid-area-sidebar {
+  grid-area: sidebar;
+}
+
+.grid-area-main {
+  grid-area: main;
+}
+
 /* Print styles */
 @media print {
   .no-print {
@@ -371,5 +476,39 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+  
+  .swipe-indicator {
+    animation: none;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .hover\:scale-105:hover {
+    transform: none;
+  }
+  
+  .hover\:shadow-lg:hover {
+    box-shadow: none;
+  }
+}
+
+/* Container queries support (future-proofing) */
+@container (max-width: 767px) {
+  .container-mobile {
+    padding: 1rem;
+  }
+}
+
+@container (min-width: 768px) {
+  .container-tablet {
+    padding: 1.5rem;
+  }
+}
+
+@container (min-width: 1024px) {
+  .container-desktop {
+    padding: 2rem;
   }
 }

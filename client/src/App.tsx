@@ -19,14 +19,29 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // Auto-collapse sidebar on mobile
+  // Auto-collapse sidebar on mobile and handle responsive behavior
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 1024) {
+      const width = window.innerWidth;
+      
+      // Mobile: Always close sidebar
+      if (width < 768) {
         setSidebarOpen(false);
+        setSidebarCollapsed(false);
+      }
+      // Tablet: Keep current state but ensure proper behavior
+      else if (width < 1024) {
+        // Don't auto-change state, let user control
+      }
+      // Desktop: Ensure sidebar is visible
+      else {
+        setSidebarOpen(true);
       }
     };
 
+    // Set initial state
+    handleResize();
+    
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -54,19 +69,19 @@ function App() {
       const deltaX = currentX - startX;
       
       // Swipe right to open sidebar (from left edge)
-      if (deltaX > 50 && startX < 50 && window.innerWidth < 1024) {
+      if (deltaX > 50 && startX < 50 && window.innerWidth < 768) {
         setSidebarOpen(true);
       }
       
       // Swipe left to close sidebar
-      if (deltaX < -50 && sidebarOpen && window.innerWidth < 1024) {
+      if (deltaX < -50 && sidebarOpen && window.innerWidth < 768) {
         setSidebarOpen(false);
       }
     };
 
-    document.addEventListener('touchstart', handleTouchStart);
-    document.addEventListener('touchmove', handleTouchMove);
-    document.addEventListener('touchend', handleTouchEnd);
+    document.addEventListener('touchstart', handleTouchStart, { passive: true });
+    document.addEventListener('touchmove', handleTouchMove, { passive: true });
+    document.addEventListener('touchend', handleTouchEnd, { passive: true });
 
     return () => {
       document.removeEventListener('touchstart', handleTouchStart);
@@ -95,7 +110,6 @@ function App() {
         return (
           <InvoiceList
             onCreateInvoice={() => {
-              // TODO: Implement create invoice modal
               console.log('Buat invoice');
             }}
             onViewInvoice={setSelectedInvoice}
@@ -105,7 +119,6 @@ function App() {
         return (
           <ClientList
             onCreateClient={() => {
-              // TODO: Implement create client modal
               console.log('Buat klien');
             }}
           />
@@ -114,7 +127,6 @@ function App() {
         return (
           <ProductList
             onCreateProduct={() => {
-              // TODO: Implement create product modal
               console.log('Buat produk');
             }}
           />
@@ -129,45 +141,40 @@ function App() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
-      {/* Mobile sidebar backdrop overlay */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden backdrop-blur-sm transition-opacity duration-300"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+    <div className="h-screen bg-gray-50 overflow-hidden">
+      {/* CSS Grid Layout */}
+      <div 
+        className="grid h-full transition-all duration-300 ease-in-out"
+        style={{
+          gridTemplateColumns: window.innerWidth >= 1024 
+            ? (sidebarCollapsed ? '4rem 1fr' : '16rem 1fr')
+            : '1fr',
+          gridTemplateRows: '3.75rem 1fr',
+          gridTemplateAreas: window.innerWidth >= 1024 
+            ? '"sidebar header" "sidebar main"'
+            : '"header" "main"'
+        }}
+      >
+        {/* Mobile sidebar backdrop overlay */}
+        {sidebarOpen && window.innerWidth < 1024 && (
+          <div 
+            className="fixed inset-0 z-40 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
 
-      {/* Sidebar */}
-      <div className={`
-        fixed inset-y-0 left-0 z-50 transform transition-all duration-300 ease-in-out lg:relative lg:translate-x-0 lg:z-auto
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        ${sidebarCollapsed ? 'lg:w-16' : 'lg:w-64'}
-      `}>
-        <Sidebar 
-          activeTab={activeTab} 
-          onTabChange={(tab) => {
-            setActiveTab(tab);
-            // Auto-close sidebar on mobile after selection
-            if (window.innerWidth < 1024) {
-              setSidebarOpen(false);
-            }
-          }}
-          collapsed={sidebarCollapsed}
-        />
-      </div>
-
-      {/* Main content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header with hamburger menu and toggle */}
-        <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shadow-sm">
+        {/* Header */}
+        <header 
+          className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shadow-sm z-30"
+          style={{ gridArea: 'header' }}
+        >
           <div className="flex items-center space-x-3">
             {/* Mobile hamburger menu */}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200 lg:hidden"
             >
-              <Menu className="h-6 w-6" />
+              {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
             
             {/* Desktop sidebar toggle */}
@@ -183,6 +190,7 @@ function App() {
               )}
             </button>
             
+            {/* Page Title */}
             <div className="flex-1 text-center lg:text-left">
               <h1 className="text-lg font-semibold text-gray-900">
                 {activeTab === 'dashboard' && 'Dasbor'}
@@ -195,12 +203,45 @@ function App() {
             </div>
           </div>
           
+          {/* Right side spacer for mobile */}
           <div className="w-10 lg:hidden" />
-        </div>
+        </header>
 
-        {/* Main content area */}
-        <main className="flex-1 overflow-auto">
-          <div className="p-4 sm:p-6 lg:p-8">
+        {/* Sidebar */}
+        <aside 
+          className={`
+            transition-all duration-300 ease-in-out z-50
+            ${window.innerWidth >= 1024 
+              ? 'relative' 
+              : `fixed inset-y-0 left-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`
+            }
+          `}
+          style={{ 
+            gridArea: window.innerWidth >= 1024 ? 'sidebar' : 'unset',
+            width: window.innerWidth >= 1024 
+              ? (sidebarCollapsed ? '4rem' : '16rem')
+              : '16rem'
+          }}
+        >
+          <Sidebar 
+            activeTab={activeTab} 
+            onTabChange={(tab) => {
+              setActiveTab(tab);
+              // Auto-close sidebar on mobile after selection
+              if (window.innerWidth < 1024) {
+                setSidebarOpen(false);
+              }
+            }}
+            collapsed={sidebarCollapsed}
+          />
+        </aside>
+
+        {/* Main content */}
+        <main 
+          className="overflow-auto bg-gray-50"
+          style={{ gridArea: 'main' }}
+        >
+          <div className="p-4 sm:p-6 lg:p-8 h-full">
             {renderContent()}
           </div>
         </main>
@@ -212,6 +253,11 @@ function App() {
           invoice={selectedInvoice}
           onClose={() => setSelectedInvoice(null)}
         />
+      )}
+
+      {/* Swipe indicator for mobile */}
+      {!sidebarOpen && window.innerWidth < 768 && (
+        <div className="swipe-indicator" />
       )}
     </div>
   );
