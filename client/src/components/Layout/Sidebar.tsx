@@ -56,7 +56,7 @@ export function Sidebar({ activeTab, onTabChange, collapsed = false }: SidebarPr
 
   return (
     <div className={`${collapsed ? 'w-16' : 'w-64'} bg-gray-800 h-full flex flex-col shadow-2xl transition-all duration-300 fixed lg:sticky top-0 z-50`}>
-      {/* Company Header */}
+      {/* Company Header - CLEAN & MODERN */}
       <div className={`${collapsed ? 'p-3' : 'p-6'} border-b border-gray-700 bg-gradient-to-r from-gray-800 to-gray-900 transition-all duration-300`}>
         <div className={`flex items-center ${collapsed ? 'justify-center' : 'space-x-4'}`}>
           {/* Company Logo */}
@@ -72,13 +72,13 @@ export function Sidebar({ activeTab, onTabChange, collapsed = false }: SidebarPr
             )}
           </div>
           
-          {/* Company Info - Hidden when collapsed */}
-          <div className={`min-w-0 flex-1 transition-all duration-300 ${collapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
+          {/* Company Info - HIDDEN when collapsed */}
+          <div className={`min-w-0 flex-1 transition-all duration-300 brand-text ${collapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
             <h1 className="text-sm font-bold text-white truncate">
-              {company?.name || 'Nama Perusahaan'}
+              {company?.name || 'InvoicePro'}
             </h1>
             <p className="text-xs text-gray-300 truncate">
-              {company?.email || user?.email || 'email@perusahaan.com'}
+              {company?.email || user?.email || 'Digital Agency'}
             </p>
             {company?.tax_id && (
               <p className="text-xs text-gray-400 truncate">
@@ -109,7 +109,7 @@ export function Sidebar({ activeTab, onTabChange, collapsed = false }: SidebarPr
                 >
                   <Icon className={`${collapsed ? 'w-6 h-6' : 'w-5 h-5'} flex-shrink-0 transition-all duration-300 ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'}`} />
                   
-                  {/* Menu Text - Hidden when collapsed */}
+                  {/* Menu Text - HIDDEN when collapsed */}
                   <span className={`font-medium truncate transition-all duration-300 menu-text ${collapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
                     {item.label}
                   </span>
@@ -142,7 +142,7 @@ export function Sidebar({ activeTab, onTabChange, collapsed = false }: SidebarPr
         >
           <LogOut className={`${collapsed ? 'w-6 h-6' : 'w-5 h-5'} text-gray-400 group-hover:text-white flex-shrink-0 transition-all duration-300`} />
           
-          {/* Logout Text - Hidden when collapsed */}
+          {/* Logout Text - HIDDEN when collapsed */}
           <span className={`font-medium truncate transition-all duration-300 menu-text ${collapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
             Keluar
           </span>

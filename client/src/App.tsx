@@ -19,34 +19,29 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // Auto-collapse sidebar on mobile and handle responsive behavior
+  // Auto-responsive behavior
   useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth;
       
-      // Mobile: Always close sidebar
       if (width < 768) {
+        // Mobile: Always close sidebar overlay
         setSidebarOpen(false);
         setSidebarCollapsed(false);
-      }
-      // Tablet: Keep current state but ensure proper behavior
-      else if (width < 1024) {
-        // Don't auto-change state, let user control
-      }
-      // Desktop: Ensure sidebar is visible
-      else {
+      } else if (width < 1024) {
+        // Tablet: Keep current state
+      } else {
+        // Desktop: Ensure sidebar is visible
         setSidebarOpen(true);
       }
     };
 
-    // Set initial state
     handleResize();
-    
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Handle swipe gestures for mobile
+  // Swipe gestures for mobile
   useEffect(() => {
     let startX = 0;
     let currentX = 0;
@@ -68,12 +63,12 @@ function App() {
 
       const deltaX = currentX - startX;
       
-      // Swipe right to open sidebar (from left edge)
+      // Swipe right to open (from left edge)
       if (deltaX > 50 && startX < 50 && window.innerWidth < 768) {
         setSidebarOpen(true);
       }
       
-      // Swipe left to close sidebar
+      // Swipe left to close
       if (deltaX < -50 && sidebarOpen && window.innerWidth < 768) {
         setSidebarOpen(false);
       }
@@ -107,7 +102,7 @@ function App() {
       // Desktop: Toggle collapsed state
       setSidebarCollapsed(!sidebarCollapsed);
     } else {
-      // Mobile/Tablet: Toggle open state
+      // Mobile/Tablet: Toggle overlay
       setSidebarOpen(!sidebarOpen);
     }
   };
@@ -165,10 +160,10 @@ function App() {
             : '"header" "main"'
         }}
       >
-        {/* Mobile sidebar backdrop overlay */}
+        {/* MOBILE BACKDROP OVERLAY - BLUR EFFECT */}
         {sidebarOpen && window.innerWidth < 1024 && (
           <div 
-            className="fixed inset-0 z-40 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300"
+            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-all duration-300"
             onClick={() => setSidebarOpen(false)}
           />
         )}
@@ -179,7 +174,7 @@ function App() {
           style={{ gridArea: 'header' }}
         >
           <div className="flex items-center space-x-3">
-            {/* ONLY Hamburger menu button */}
+            {/* ONLY Hamburger Button */}
             <button
               onClick={handleSidebarToggle}
               className="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200"
@@ -208,11 +203,11 @@ function App() {
             </div>
           </div>
           
-          {/* Right side spacer for mobile */}
+          {/* Right spacer for mobile */}
           <div className="w-10 lg:hidden" />
         </header>
 
-        {/* Sidebar */}
+        {/* Sidebar - FIXED OVERLAY for Mobile */}
         <aside 
           className={`
             transition-all duration-300 ease-in-out z-50
@@ -232,7 +227,7 @@ function App() {
             activeTab={activeTab} 
             onTabChange={(tab) => {
               setActiveTab(tab);
-              // Auto-close sidebar on mobile after selection
+              // Auto-close on mobile after selection
               if (window.innerWidth < 1024) {
                 setSidebarOpen(false);
               }
@@ -241,7 +236,7 @@ function App() {
           />
         </aside>
 
-        {/* Main content */}
+        {/* Main Content - NO SHIFT on Mobile */}
         <main 
           className="overflow-auto bg-gray-50"
           style={{ gridArea: 'main' }}
