@@ -133,9 +133,9 @@ export function Dashboard() {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Invoices - Takes 2 columns on large screens */}
-        <div className="lg:col-span-2">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* Recent Invoices - Takes 2 columns on xl screens */}
+        <div className="xl:col-span-2">
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
             <div className="px-4 lg:px-6 py-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
@@ -233,7 +233,7 @@ export function Dashboard() {
           </div>
         </div>
 
-        {/* Sidebar - Takes 1 column on large screens */}
+        {/* Sidebar - Takes 1 column on xl screens */}
         <div className="space-y-6">
           {/* Monthly Overview */}
           <div className="bg-white rounded-xl border border-gray-200 p-6">

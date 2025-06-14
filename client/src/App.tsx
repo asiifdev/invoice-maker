@@ -84,44 +84,53 @@ function App() {
   };
 
   return (
-    <div className="h-screen bg-gray-50 flex overflow-hidden">
+    <div className="h-screen bg-gray-50 flex">
       {/* Desktop Sidebar - Always visible on large screens */}
-      <div className="hidden lg:flex lg:flex-shrink-0">
+      <div className="hidden lg:block lg:w-64 lg:flex-shrink-0">
         <Sidebar 
           activeTab={activeTab} 
           onTabChange={setActiveTab}
-          isMobileOpen={false}
-          onMobileToggle={() => {}}
         />
       </div>
 
-      {/* Mobile Sidebar - Overlay on small screens */}
-      <Sidebar 
-        activeTab={activeTab} 
-        onTabChange={(tab) => {
-          setActiveTab(tab);
-          setIsMobileSidebarOpen(false);
-        }}
-        isMobileOpen={isMobileSidebarOpen}
-        onMobileToggle={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-      />
+      {/* Mobile Sidebar Overlay */}
+      {isMobileSidebarOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={() => setIsMobileSidebarOpen(false)}
+        />
+      )}
+
+      {/* Mobile Sidebar */}
+      <div className={`
+        lg:hidden fixed inset-y-0 left-0 z-50 w-64 bg-white transform transition-transform duration-300 ease-in-out
+        ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        <Sidebar 
+          activeTab={activeTab} 
+          onTabChange={(tab) => {
+            setActiveTab(tab);
+            setIsMobileSidebarOpen(false);
+          }}
+          isMobile={true}
+          onClose={() => setIsMobileSidebarOpen(false)}
+        />
+      </div>
       
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0">
         {/* Mobile Header */}
-        <div className="lg:hidden bg-white border-b border-gray-200 px-4 py-3">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => setIsMobileSidebarOpen(true)}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              <Menu className="w-6 h-6 text-gray-600" />
-            </button>
-            <h1 className="text-lg font-semibold text-gray-900">
-              {getPageTitle()}
-            </h1>
-            <div className="w-10"></div> {/* Spacer for centering */}
-          </div>
+        <div className="lg:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+          <button
+            onClick={() => setIsMobileSidebarOpen(true)}
+            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            <Menu className="w-6 h-6 text-gray-600" />
+          </button>
+          <h1 className="text-lg font-semibold text-gray-900">
+            {getPageTitle()}
+          </h1>
+          <div className="w-10"></div> {/* Spacer for centering */}
         </div>
 
         {/* Content Area */}
