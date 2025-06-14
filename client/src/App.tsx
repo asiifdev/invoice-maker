@@ -10,13 +10,14 @@ import { InvoiceSettings } from './components/Settings/InvoiceSettings';
 import { AuthForm } from './components/Auth/AuthForm';
 import { NavigationTab, Invoice } from './types';
 import { useAuth } from './hooks/useAuth';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 function App() {
   const { user, loading } = useAuth();
   const [activeTab, setActiveTab] = useState<NavigationTab>('dashboard');
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   if (loading) {
     return (
@@ -83,8 +84,9 @@ function App() {
 
       {/* Sidebar */}
       <div className={`
-        fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:z-auto
+        fixed inset-y-0 left-0 z-50 transform transition-all duration-300 ease-in-out lg:relative lg:translate-x-0 lg:z-auto
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        ${sidebarCollapsed ? 'lg:w-16' : 'lg:w-64'}
       `}>
         <Sidebar 
           activeTab={activeTab} 
@@ -94,30 +96,47 @@ function App() {
             if (window.innerWidth < 1024) {
               setSidebarOpen(false);
             }
-          }} 
+          }}
+          collapsed={sidebarCollapsed}
         />
       </div>
 
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header with hamburger menu */}
-        <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between lg:justify-start">
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors lg:hidden"
-          >
-            <Menu className="h-6 w-6" />
-          </button>
-          
-          <div className="flex-1 text-center lg:text-left lg:ml-4">
-            <h1 className="text-lg font-semibold text-gray-900">
-              {activeTab === 'dashboard' && 'Dasbor'}
-              {activeTab === 'invoices' && 'Invoice'}
-              {activeTab === 'clients' && 'Klien'}
-              {activeTab === 'products' && 'Produk'}
-              {activeTab === 'company' && 'Perusahaan'}
-              {activeTab === 'settings' && 'Pengaturan'}
-            </h1>
+        {/* Header with hamburger menu and toggle */}
+        <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            {/* Mobile hamburger menu */}
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors lg:hidden"
+            >
+              <Menu className="h-6 w-6" />
+            </button>
+            
+            {/* Desktop sidebar toggle */}
+            <button
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="hidden lg:flex p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+              title={sidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+            >
+              {sidebarCollapsed ? (
+                <ChevronRight className="h-5 w-5" />
+              ) : (
+                <ChevronLeft className="h-5 w-5" />
+              )}
+            </button>
+            
+            <div className="flex-1 text-center lg:text-left">
+              <h1 className="text-lg font-semibold text-gray-900">
+                {activeTab === 'dashboard' && 'Dasbor'}
+                {activeTab === 'invoices' && 'Invoice'}
+                {activeTab === 'clients' && 'Klien'}
+                {activeTab === 'products' && 'Produk'}
+                {activeTab === 'company' && 'Perusahaan'}
+                {activeTab === 'settings' && 'Pengaturan'}
+              </h1>
+            </div>
           </div>
           
           <div className="w-10 lg:hidden" />
