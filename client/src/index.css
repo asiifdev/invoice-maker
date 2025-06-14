@@ -10,6 +10,8 @@
   --transition-duration: 300ms;
   --primary-color: #2563eb;
   --primary-hover: #1d4ed8;
+  --sidebar-bg: #1f2937;
+  --sidebar-hover: #374151;
   --gray-50: #f9fafb;
   --gray-100: #f3f4f6;
   --gray-200: #e5e7eb;
@@ -44,6 +46,19 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--gray-600);
+}
+
+/* Dark scrollbar untuk sidebar */
+.sidebar-scrollbar::-webkit-scrollbar-track {
+  background: var(--gray-800);
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--gray-600);
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-500);
 }
 
 /* Focus styles untuk accessibility */
@@ -98,6 +113,25 @@
   }
 }
 
+/* Sidebar specific animations */
+.sidebar-enter {
+  transform: translateX(-100%);
+}
+
+.sidebar-enter-active {
+  transform: translateX(0);
+  transition: transform var(--transition-duration) ease-out;
+}
+
+.sidebar-exit {
+  transform: translateX(0);
+}
+
+.sidebar-exit-active {
+  transform: translateX(-100%);
+  transition: transform var(--transition-duration) ease-in;
+}
+
 /* Card hover effects */
 .card-hover {
   transition: all var(--transition-duration) ease;
@@ -122,6 +156,33 @@
   background-color: var(--primary-hover);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+/* Sidebar menu item hover effects */
+.sidebar-menu-item {
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar-menu-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.sidebar-menu-item:hover::before {
+  left: 100%;
+}
+
+/* Backdrop blur effect */
+.backdrop-blur-custom {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 /* Table responsive styles */
@@ -227,6 +288,58 @@
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
+/* Tooltip styles */
+.tooltip {
+  position: relative;
+}
+
+.tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--gray-900);
+  color: white;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-duration) ease;
+}
+
+.tooltip:hover::after {
+  opacity: 1;
+}
+
+/* Swipe indicator for mobile */
+.swipe-indicator {
+  position: fixed;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 40px;
+  background: linear-gradient(to bottom, transparent, var(--primary-color), transparent);
+  border-radius: 0 4px 4px 0;
+  opacity: 0.5;
+  animation: swipePulse 2s infinite;
+  z-index: 30;
+}
+
+@keyframes swipePulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: translateY(-50%) translateX(0);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateY(-50%) translateX(8px);
+  }
+}
+
 /* Print styles */
 @media print {
   .no-print {
@@ -237,5 +350,26 @@
     width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .sidebar-menu-item {
+    border: 1px solid transparent;
+  }
+  
+  .sidebar-menu-item:focus,
+  .sidebar-menu-item:hover {
+    border-color: white;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

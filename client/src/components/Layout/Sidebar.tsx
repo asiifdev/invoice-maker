@@ -55,12 +55,12 @@ export function Sidebar({ activeTab, onTabChange, collapsed = false }: SidebarPr
   };
 
   return (
-    <div className={`${collapsed ? 'w-16' : 'w-64'} bg-white border-r border-gray-200 h-full flex flex-col shadow-lg transition-all duration-300 fixed lg:sticky top-0`}>
+    <div className={`${collapsed ? 'w-16' : 'w-64'} bg-gray-800 h-full flex flex-col shadow-2xl transition-all duration-300 fixed lg:sticky top-0 z-50`}>
       {/* Company Header */}
-      <div className={`${collapsed ? 'p-2' : 'p-4 sm:p-6'} border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 transition-all duration-300`}>
-        <div className={`flex items-center ${collapsed ? 'justify-center' : 'space-x-3'}`}>
+      <div className={`${collapsed ? 'p-3' : 'p-6'} border-b border-gray-700 bg-gradient-to-r from-gray-800 to-gray-900 transition-all duration-300`}>
+        <div className={`flex items-center ${collapsed ? 'justify-center' : 'space-x-4'}`}>
           {/* Company Logo */}
-          <div className={`${collapsed ? 'w-10 h-10' : 'w-12 h-12'} bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md transition-all duration-300`}>
+          <div className={`${collapsed ? 'w-10 h-10' : 'w-12 h-12'} bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg transition-all duration-300 ring-2 ring-blue-500/20`}>
             {company?.logo_url ? (
               <img 
                 src={company.logo_url} 
@@ -75,14 +75,14 @@ export function Sidebar({ activeTab, onTabChange, collapsed = false }: SidebarPr
           {/* Company Info */}
           {!collapsed && (
             <div className="min-w-0 flex-1 transition-opacity duration-300">
-              <h1 className="text-sm font-bold text-gray-900 truncate">
+              <h1 className="text-sm font-bold text-white truncate">
                 {company?.name || 'Nama Perusahaan'}
               </h1>
-              <p className="text-xs text-gray-600 truncate">
+              <p className="text-xs text-gray-300 truncate">
                 {company?.email || user?.email || 'email@perusahaan.com'}
               </p>
               {company?.tax_id && (
-                <p className="text-xs text-gray-500 truncate">
+                <p className="text-xs text-gray-400 truncate">
                   NPWP: {company.tax_id}
                 </p>
               )}
@@ -92,8 +92,8 @@ export function Sidebar({ activeTab, onTabChange, collapsed = false }: SidebarPr
       </div>
       
       {/* Navigation */}
-      <nav className={`flex-1 ${collapsed ? 'p-2' : 'p-3 sm:p-4'} overflow-y-auto transition-all duration-300`}>
-        <ul className={`space-y-1 ${collapsed ? '' : 'sm:space-y-2'}`}>
+      <nav className={`flex-1 ${collapsed ? 'p-2' : 'p-4'} overflow-y-auto transition-all duration-300`}>
+        <ul className={`space-y-2`}>
           {navigationItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -102,22 +102,28 @@ export function Sidebar({ activeTab, onTabChange, collapsed = false }: SidebarPr
               <li key={item.id}>
                 <button
                   onClick={() => onTabChange(item.id)}
-                  className={`w-full flex items-center ${collapsed ? 'justify-center p-3' : 'space-x-3 px-3 py-2.5'} rounded-lg text-left transition-all duration-200 group relative ${
+                  className={`w-full flex items-center ${collapsed ? 'justify-center p-3' : 'space-x-3 px-4 py-3'} rounded-xl text-left transition-all duration-300 group relative ${
                     isActive
-                      ? 'bg-blue-50 text-blue-700 border border-blue-200 shadow-sm'
-                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25 scale-105'
+                      : 'text-gray-300 hover:bg-gray-700 hover:text-white hover:scale-105'
                   }`}
                   title={collapsed ? item.label : undefined}
                 >
-                  <Icon className={`${collapsed ? 'w-6 h-6' : 'w-5 h-5'} flex-shrink-0 transition-all duration-200 ${isActive ? 'text-blue-600' : 'text-gray-500'}`} />
+                  <Icon className={`${collapsed ? 'w-6 h-6' : 'w-5 h-5'} flex-shrink-0 transition-all duration-300 ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'}`} />
                   {!collapsed && (
                     <span className="font-medium truncate transition-opacity duration-300">{item.label}</span>
                   )}
                   
+                  {/* Active indicator */}
+                  {isActive && !collapsed && (
+                    <div className="absolute right-2 w-2 h-2 bg-white rounded-full"></div>
+                  )}
+                  
                   {/* Tooltip for collapsed state */}
                   {collapsed && (
-                    <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                    <div className="absolute left-full ml-3 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 shadow-xl">
                       {item.label}
+                      <div className="absolute left-0 top-1/2 transform -translate-x-1 -translate-y-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
                     </div>
                   )}
                 </button>
@@ -128,21 +134,22 @@ export function Sidebar({ activeTab, onTabChange, collapsed = false }: SidebarPr
       </nav>
 
       {/* Footer */}
-      <div className={`${collapsed ? 'p-2' : 'p-3 sm:p-4'} border-t border-gray-200 bg-gray-50 transition-all duration-300`}>
+      <div className={`${collapsed ? 'p-2' : 'p-4'} border-t border-gray-700 bg-gray-900 transition-all duration-300`}>
         <button
           onClick={handleSignOut}
-          className={`w-full flex items-center ${collapsed ? 'justify-center p-3' : 'space-x-3 px-3 py-2.5'} rounded-lg text-left transition-all duration-200 text-gray-700 hover:bg-red-50 hover:text-red-700 group relative`}
+          className={`w-full flex items-center ${collapsed ? 'justify-center p-3' : 'space-x-3 px-4 py-3'} rounded-xl text-left transition-all duration-300 text-gray-300 hover:bg-red-600 hover:text-white hover:scale-105 group relative`}
           title={collapsed ? 'Keluar' : undefined}
         >
-          <LogOut className={`${collapsed ? 'w-6 h-6' : 'w-5 h-5'} text-gray-500 flex-shrink-0 transition-all duration-200`} />
+          <LogOut className={`${collapsed ? 'w-6 h-6' : 'w-5 h-5'} text-gray-400 group-hover:text-white flex-shrink-0 transition-all duration-300`} />
           {!collapsed && (
             <span className="font-medium truncate transition-opacity duration-300">Keluar</span>
           )}
           
           {/* Tooltip for collapsed state */}
           {collapsed && (
-            <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+            <div className="absolute left-full ml-3 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 shadow-xl">
               Keluar
+              <div className="absolute left-0 top-1/2 transform -translate-x-1 -translate-y-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
             </div>
           )}
         </button>
